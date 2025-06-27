@@ -19,7 +19,7 @@ jobs:
       - name: 🧰 Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.0' # Adjust based on your .NET version
+            dotnet-version: 9.0.x
 
       - name: 🛠️ Publish app
         run: |
@@ -28,6 +28,6 @@ jobs:
       - name: 📦 Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: out/*
+          files: publish/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

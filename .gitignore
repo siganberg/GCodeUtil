@@ -24,3 +24,4 @@ project.lock
 
 .DS_Store
 publish/*
+release-assets/*

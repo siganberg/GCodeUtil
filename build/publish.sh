@@ -6,12 +6,15 @@ CONFIGURATION="Release"
 for RID in "${RUNTIMES[@]}"
 do
     echo "Publishing for $RID..."
-    dotnet publish -c $CONFIGURATION \
+    dotnet publish  GCodeUtil/GCodeUtil.csproj -c $CONFIGURATION \
       -r $RID \
       --self-contained true \
       /p:PublishSingleFile=true \
       /p:IncludeNativeLibrariesForSelfExtract=true \
       /p:EnableCompressionInSingleFile=true \
       /p:DebugType=None \
-      /p:PublishTrimmed=true 
+      /p:PublishTrimmed=true  \
+      -o ./publish/$RID
+      zip -r ./publish/$RID ./publish/$RID/.
+      rm -rf ./publish/$RID
 done
