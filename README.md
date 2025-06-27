@@ -35,7 +35,20 @@ GCodeModifier myfile.gcode "M8,G4 P1000"
 # Inserts "M8" and "G4 P1000" before first G0 X.. Y.. after every M6 or M98
 ```
 
+## 📒 Notes
+
+For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
+
+```
+mkdir <path-where-you-extracted-the-GCodeUtil>
+codesign --force --deep --sign - GCodeUtil
+```
+
 ## ✍️ Author
 
 Developed by FrancisCreation
 Pull requests and contributions welcome!
+
+
+
+
