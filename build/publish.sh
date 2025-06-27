@@ -14,7 +14,7 @@ do
       /p:EnableCompressionInSingleFile=true \
       /p:DebugType=None \
       /p:PublishTrimmed=true  \
-      -o ./publish/$RID
-      zip -r ./publish/$RID ./publish/$RID/.
-      rm -rf ./publish/$RID
+      -o ./publish/$RID 
+    zip -rj ./publish/$RID ./publish/$RID/.
+    rm -rf ./publish/$RID
 done
