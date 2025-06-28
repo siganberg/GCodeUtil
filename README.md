@@ -25,14 +25,22 @@ GCodeModifier <input_file_path> [insert_gcode]
 
 --- 
 
-## 🧪 Example
+## 🧪 Examples
 
+This will turn on the flood only after the tool change and before the spindle into the material.
 ```
-GCodeModifier myfile.gcode
 # Inserts "M8" before first G0 X.. Y.. after every M6 or M98
+GCodeModifier myfile.gcode 
+```
 
-GCodeModifier myfile.gcode "M8,G4 P1000"
-# Inserts "M8" and "G4 P1000" before first G0 X.. Y.. after every M6 or M98
+This will turn on the flood only after the tool change, then wait 1 second before the spindle plunges into the material. I use this to give the AutoDustBoot time to fully expand.
+```
+GCodeModifier myfile.gcode "M8,G4 P1" 
+```
+
+This will turn on the flood only after the tool change, then wait 5 seconds before the spindle plunges into the material. It’s useful for giving the spindle time to reach full speed before continuing the job. This is especially helpful for PWM spindles that rely on a static delay.
+```
+GCodeModifier myfile.gcode "M8,G4 P5" 
 ```
 
 ## 📒 Notes
@@ -44,7 +52,7 @@ mkdir <path-where-you-extracted-the-GCodeUtil>
 codesign --force --deep --sign - GCodeUtil
 ```
 
-- Currently support g-code format, Grbl and Masso.
+
 
 ## ✍️ Author
 
