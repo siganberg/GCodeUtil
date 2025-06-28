@@ -1,4 +1,6 @@
-﻿namespace GCodeUtil;
+﻿using static System.Text.RegularExpressions.Regex;
+
+namespace GCodeUtil;
 
 static class Program
 {
@@ -12,7 +14,7 @@ static class Program
      
      
         var inputPath = args[0];
-        var insertGCodes = args.Length >= 2 ? args[1].Split(',') : new[] { "M8\nG4 P1" };
+        var insertGCodes = args.Length >= 2 ? args[1].Split(',') : ["M8","G4 P1"];
 
         if (!File.Exists(inputPath))
         {
@@ -34,34 +36,49 @@ static class Program
         {
             var trimmed = line.Trim();
 
-            if (trimmed.StartsWith("M6", StringComparison.OrdinalIgnoreCase) ||
-                trimmed.StartsWith("M98", StringComparison.OrdinalIgnoreCase))
+            if (trimmed.Contains("M6 ", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.Contains("M98 ", StringComparison.OrdinalIgnoreCase))
             {
                 insertPending = true;
                 writer.WriteLine(line);
                 continue;
             }
 
-            writer.WriteLine(line);
+            if (!IsCoolandCommand(trimmed))
+                writer.WriteLine(trimmed);
+
+            if (!insertPending || !IsG0XyLine(trimmed)) continue;
             
-            if (insertPending && IsG0XyLine(trimmed))
+            var lineNumber = GetNextLineNumber(trimmed);
+            foreach (var gcode in insertGCodes)
             {
-                foreach (var gcode in insertGCodes)
-                {
-                    writer.WriteLine(gcode.Trim());
-                }
-                insertPending = false;
+                writer.WriteLine((lineNumber > 0 ? $"N{lineNumber++} " : "") + gcode.Trim());
             }
-       
+            insertPending = false;
+
         }
 
         Console.WriteLine("Modified file saved to: " + outputPath);
     }
 
+    private static bool IsCoolandCommand(string line)
+    {
+        return line.Contains("M8") || line.Contains("M08");
+    }
+
+    static int GetNextLineNumber(string line)
+    {
+        var match = Match(line, @"^N(\d+)\b");
+        if (!match.Success) return 0;
+        return int.TryParse(match.Groups[1].Value, out var result) 
+            ? result 
+            : 0;
+    }
+
     static bool IsG0XyLine(string line)
     {
-        if (!line.StartsWith("G0", StringComparison.OrdinalIgnoreCase) &&
-            !line.StartsWith("G00", StringComparison.OrdinalIgnoreCase))
+        if (!line.Contains("G0 ", StringComparison.OrdinalIgnoreCase) &&
+            !line.Contains("G00 ", StringComparison.OrdinalIgnoreCase))
             return false;
 
         return line.IndexOf("X", StringComparison.OrdinalIgnoreCase) >= 0 &&
