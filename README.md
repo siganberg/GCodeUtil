@@ -1,6 +1,6 @@
 # GCodeModifier
 
-A lightweight C# console tool that modifies G-code files by inserting custom commands after each `M6` or `M98`, just before the first `G0 X.. Y..` movement line that follows.
+A lightweight tool that modifies G-code files by inserting custom commands after each `M6` or `M98`, just before the first `G0 X.. Y..` movement line that follows. I use this for smarter way to retract/expand AutoDustBoot.
 
 ---
 
