@@ -6,7 +6,6 @@ A lightweight tool that modifies G-code files by inserting custom commands after
 
 ## 🚀 Features
 
-- Line-by-line processing for **low memory usage**
 - Automatically inserts a configurable G-code command (default: `M8`)
 - Supports multiple insert commands, comma-separated (e.g. `M8,G4 P1`)
 
