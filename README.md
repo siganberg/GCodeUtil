@@ -37,12 +37,14 @@ GCodeModifier myfile.gcode "M8,G4 P1000"
 
 ## 📒 Notes
 
-For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
+- For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
 
 ```
 mkdir <path-where-you-extracted-the-GCodeUtil>
 codesign --force --deep --sign - GCodeUtil
 ```
+
+- Currently support g-code format, Grbl and Masso.
 
 ## ✍️ Author
 
