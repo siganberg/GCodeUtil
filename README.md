@@ -84,18 +84,6 @@ N330 G00 Z2.540
 ```
 
 
-
-
-This will turn on the flood only after the tool change, then wait 1 second before the spindle plunges into the material. I use this to give the AutoDustBoot time to fully expand.
-```
-GCodeModifier myfile.gcode "M8,G4 P1" 
-```
-
-This will turn on the flood only after the tool change, then wait 5 seconds before the spindle plunges into the material. It’s useful for giving the spindle time to reach full speed before continuing the job. This is especially helpful for PWM spindles that rely on a static delay.
-```
-GCodeModifier myfile.gcode "M8,G4 P5" 
-```
-
 ## 📒 Notes
 
 - For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
