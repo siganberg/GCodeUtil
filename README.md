@@ -37,11 +37,10 @@ The application supports customization through a settings.json file. You can con
 
 ## 🧪 Examples
 
-This will turn on the flood only after the tool change and before the spindle into the material.
-
-Sample NC file content. 
+Sample NC (demo.nc) file content. 
 
 ```
+...
 N210 (Toolpath:- V-Carve 1 [Clear 1])
 N220 ()
 N230 (Change to tool End Mill {1/4"} UP CUT)
@@ -55,16 +54,18 @@ N300 G00 X8.449 Y-0.896
 N310 G00 Z3.810
 N320 G00 X8.449 Y-0.896
 N330 G00 Z2.540
+...
 ```
 
 Executing this command:
 ```
-GCodeModifier myfile.gcode 
+GCodeModifier demo.nc 
 ```
 
-Will generate a new NC file with the following changes:
+Will generate a new NC  (demo_modified.nc) file with the following changes:
 
 ```
+...
 N210 (Toolpath:- V-Carve 1 [Clear 1])
 N220 ()
 N230 (Change to tool End Mill {1/4"} UP CUT)
@@ -79,6 +80,7 @@ N300 G00 X8.449 Y-0.896
 N310 G00 Z3.810
 N320 G00 X8.449 Y-0.896
 N330 G00 Z2.540
+...
 ```
 
 
