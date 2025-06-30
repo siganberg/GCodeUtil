@@ -1,4 +1,6 @@
-﻿using static System.Text.RegularExpressions.Regex;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using static System.Text.RegularExpressions.Regex;
 
 namespace GCodeUtil;
 
@@ -6,15 +8,16 @@ static class Program
 {
     static void Main(string[] args)
     {
+        var settings = GetSettings();
+        
         if (args.Length == 0 || args[0] == "--help" || args[0] == "-h")
         {
             ShowHelp();
             return;
         }
      
-     
         var inputPath = args[0];
-        var insertGCodes = args.Length >= 2 ? args[1].Split(',') : ["M8","G4 P1"];
+
 
         if (!File.Exists(inputPath))
         {
@@ -32,6 +35,7 @@ static class Program
         using var reader = new StreamReader(inputPath);
         using var writer = new StreamWriter(outputPath);
 
+        var commandQueue = new Queue<string>(); 
         while (reader.ReadLine() is { } line)
         {
             var trimmed = line.Trim();
@@ -39,21 +43,34 @@ static class Program
             if (trimmed.Contains("M6 ", StringComparison.OrdinalIgnoreCase) ||
                 trimmed.Contains("M98 ", StringComparison.OrdinalIgnoreCase))
             {
+                InsertGCodeBeforeToolChange(settings, trimmed, writer);
                 insertPending = true;
                 writer.WriteLine(line);
+                commandQueue.Clear();
                 continue;
             }
 
-            if (!IsCoolandCommand(trimmed))
-                writer.WriteLine(trimmed);
-
-            if (!insertPending || !IsG0XyLine(trimmed)) continue;
-            
-            var lineNumber = GetNextLineNumber(trimmed);
-            foreach (var gcode in insertGCodes)
+            //-- Moved other delay found, can also move spindle start if desired.
+            if (trimmed.Contains("G4"))
             {
-                writer.WriteLine((lineNumber > 0 ? $"N{lineNumber++} " : "") + gcode.Trim());
+                commandQueue.Enqueue(trimmed);
+                continue;
             }
+            
+            if (IsCoolantCommand(trimmed))
+                continue;
+            
+            writer.WriteLine(trimmed);
+            
+            if (!insertPending || !IsG0XyLine(trimmed)) continue;
+
+            //-- flushed all queue command. 
+            while (commandQueue.Count > 0)
+                writer.WriteLine(commandQueue.Dequeue());
+            
+            var gCodes = settings.GCodeToInsertBeforeToolChange.Split(",", StringSplitOptions.RemoveEmptyEntries);
+            InsertGCodesAfterToolChange(settings, trimmed, writer);
+            
             insertPending = false;
 
         }
@@ -61,12 +78,59 @@ static class Program
         Console.WriteLine("Modified file saved to: " + outputPath);
     }
 
-    private static bool IsCoolandCommand(string line)
+    private static void InsertGCodesAfterToolChange(Settings settings, string trimmed, StreamWriter writer)
+    {
+        var gCodes = settings.GCodeToInsertAfterToolChange.Split(",", StringSplitOptions.RemoveEmptyEntries);
+        if (gCodes.Length == 0) return; 
+        var lineNumber = GetLineNumber(trimmed)+1;
+        foreach (var gcode in gCodes)
+        {
+            writer.WriteLine((lineNumber > 0 ? $"N{lineNumber++} " : "") + gcode.Trim());
+        }
+    }
+
+    private static void InsertGCodeBeforeToolChange(Settings settings, string trimmed, StreamWriter writer)
+    {
+        var gCodes = settings.GCodeToInsertBeforeToolChange.Split(",", StringSplitOptions.RemoveEmptyEntries);
+        if (gCodes.Length == 0) return; 
+        var lineNumber = GetLineNumber(trimmed)-gCodes.Length;
+        foreach (var gcode in gCodes)
+        {
+            writer.WriteLine((lineNumber > 0 ? $"N{lineNumber++} " : "") + gcode.Trim());
+        }
+    }
+
+    public static Settings GetSettings()
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var settingPath = currentDirectory + "/" + "settings.json";
+        
+        if (!File.Exists(settingPath))
+        {
+            Console.WriteLine("settings.json cannot be found.");
+            Console.WriteLine("Generating new settings.json with default value.");
+            using var file = File.CreateText(settingPath);
+            var settings = new Settings();
+            file.Write(JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault }));
+            file.Close();
+            return new Settings();
+        }
+
+        var configFile = File.ReadAllText(settingPath);
+        var configModel = JsonSerializer.Deserialize<Settings>(configFile);
+        if (configModel != null) return configModel;
+        
+        Console.WriteLine("settings.json has invalid content. Restoring default.");
+        return new Settings();
+    }
+
+
+    private static bool IsCoolantCommand(string line)
     {
         return line.Contains("M8") || line.Contains("M08");
     }
 
-    static int GetNextLineNumber(string line)
+    static int GetLineNumber(string line)
     {
         var match = Match(line, @"^N(\d+)\b");
         if (!match.Success) return 0;
@@ -95,20 +159,18 @@ static class Program
 
             Arguments:
               input_file_path      Path to the input .gcode file.
-              gcode_to_insert      (Optional) One or more G-code commands to insert, comma-separated.
-                                   If omitted, defaults to: M8
-
+           
             Behavior:
               - Scans the file line-by-line.
-              - After every M6 or M98, finds the first 'G0 X.. Y..' line and inserts the specified G-code(s) before it.
+              - Insert custom g-code command before or after every M6 or M98. 
               - Writes the result to a new file: '<original_filename>_modified.gcode'
 
             Examples:
               GCodeModifier myfile.gcode
-                → Inserts 'M8' before first G0 X.. Y.. after every M6 or M98
+                → Inserts 'M8' after the tool-change command.
 
               GCodeModifier toolpath.gcode ""M8,G4 P1""
-                → Inserts M8 and G4 P1 before first G0 X.. Y.. after M6 or M98
+                → Inserts M8 and G4 P1 after the tool-change command.
 
               GCodeModifier --help
                 → Displays this help screen
