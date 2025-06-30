@@ -62,7 +62,7 @@ Executing this command:
 GCodeModifier demo.nc 
 ```
 
-Will generate a new NC  (demo_modified.nc) file with the following changes:
+This will generate a new NC  (demo_modified.nc) file with the following changes:
 
 ```
 ...
