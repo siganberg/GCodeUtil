@@ -10,6 +10,23 @@ A lightweight tool that modifies G-code files by inserting custom commands befor
 - Supports multiple insert commands, comma-separated (e.g. `M8,G4 P1`)
 
 ---
+## 🛠️ Installation
+
+Downlaod the latest version from the Releases: https://github.com/siganberg/GCodeUtil/releases  
+
+Select the correct binaries for your specific Operating System such as Windows, MacOS or Linux.
+
+Notes:
+
+For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
+
+```
+mkdir <path-where-you-extracted-the-GCodeUtil>
+codesign --force --deep --sign - GCodeUtil
+```
+
+
+----
 
 ## 🧰 Usage
 
@@ -46,8 +63,6 @@ N220 ()
 N230 (Change to tool End Mill {1/4"} UP CUT)
 N240 M98 P631
 N250 S19000 M03
-N260 M08
-N270 G4 P5000
 N280 G00 X8.449 Y-0.896
 N290 G00
 N300 G00 X8.449 Y-0.896
@@ -72,7 +87,6 @@ N230 (Change to tool End Mill {1/4"} UP CUT)
 N240 M98 P631
 N250 S19000 M03
 N280 G00 X8.449 Y-0.896
-N270 G4 P5000
 N280 M8 👈
 N281 G4 P1 👈
 N290 G00
@@ -83,15 +97,6 @@ N330 G00 Z2.540
 ...
 ```
 
-
-## 📒 Notes
-
-- For latest MacOS (BigSur Up), in order to run this utility you need to codesign it else you will get error `zsh: killed`
-
-```
-mkdir <path-where-you-extracted-the-GCodeUtil>
-codesign --force --deep --sign - GCodeUtil
-```
 
 
 

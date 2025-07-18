@@ -1,0 +1,4 @@
+{
+  "GCodeToInsertBeforeToolChange": "M9",
+  "GCodeToInsertAfterToolChange": "M8,G4 P1"
+}
